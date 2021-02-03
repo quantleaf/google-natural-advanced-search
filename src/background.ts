@@ -1,11 +1,14 @@
 chrome.runtime.onInstalled.addListener(function() {
-  chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+ /* chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([{
       conditions: [],
       actions: [new chrome.declarativeContent.ShowPageAction()]
     }]);
   });
-  
+  */
+  chrome.browserAction.onClicked.addListener(function() {
+    new chrome.declarativeContent.ShowPageAction()
+  });
  
 
 });

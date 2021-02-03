@@ -4,11 +4,10 @@
     "description": "Google advanced search in natural language",
     "permissions": [
       "tabs",
-      "declarativeContent",
       "storage"
     ],
     "background": {
-      "scripts": ["build/background.js"],
+      "scripts": ["background.js"],
       "persistent": false
     },
     "content_scripts": [{
@@ -1222,12 +1221,12 @@
 "https://google.wp/?*"
 
 ],
-      "js": ["build/inject.js"],
+      "js": ["inject.js"],
       "all_frames": true,
       "run_at": "document_end"
     }],
     "browser_action": {
-      "default_popup": "src/popup.html",
+      "default_popup": "popup.html",
       "default_icon": {
         "16": "images/logo-16x16.png",
         "32": "images/logo-32x32.png",

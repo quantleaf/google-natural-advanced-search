@@ -1,5 +1,5 @@
 import { ConditionAnd, ConditionCompare, ConditionElement, Unknown } from '@quantleaf/query-result'
-import { allWordsKey, anyOfKey, countryKey, dateKey, exactPhraseKey, languageKey, notAnyOfWordsKey, numbersRangeKey, unitKey, websiteKey, textLocationKey, safeSearchKey, fileTypeKey, licenseKey, resultType, GeneralSearch } from './advanced-search-schema'; // , Text, Images, News, Shopping 
+import { allWordsKey, anyOfKey, countryKey, dateKey, exactPhraseKey, languageKey, notAnyOfWordsKey, numbersRangeKey, unitKey, websiteKey, textLocationKey, safeSearchKey, fileTypeKey, licenseKey, resultTypeKey, GeneralSearch } from './advanced-search-schema'; // , Text, Images, News, Shopping 
 import { translate, config, generateSchema } from '@quantleaf/query-sdk-node';
 import { QueryResponse } from '@quantleaf/query-request';
 
@@ -441,6 +441,11 @@ async function initialize() {
                 scrollingEventPerforming = true;
             }
         });
+        
+        window.addEventListener('resize',function() {
+            setScrollStyle();
+        });
+
     }
 }
 
@@ -540,15 +545,8 @@ async function restoreLastSearchQuery() {
     if (!lastRestoredState && hasTypedAnything) {
         return;
     }
-    sess = lastRestoredState;
-    if(!sess || sess.parsedQuery?.searchParams != lastSearchField?.value) // Different tabs or something has changed
-    {
-        sess = {}
-        return; 
-    }
-    
-    const calculatedSearchText = searchFieldTextFromParsedQuery(sess.parsedQuery)
-    if (calculatedSearchText == lastSearchField.value) {
+    sess = lastRestoredState && lastRestoredState.parsedQuery?.searchParams == lastSearchField?.value ? lastRestoredState : {};
+    if (sess.parsedQuery?.searchParams == lastSearchField.value) {
         getResult(sess.unparsedQuery);
     }
     else {
@@ -812,7 +810,10 @@ function navigateToQuery(parsedQuery: ParsedQuery) {
 function printSuggestions() {
     tip.innerHTML = showSuggestions ? hideKeyswWordsHTML : showKeyswWordsHTML;
     if (showSuggestions) {
-        suggestionsContainer.innerHTML = `Suggestions</br><i>${lastSuggestions}</i>`;
+        if(lastSuggestions)
+            suggestionsContainer.innerHTML = `Suggestions</br><i>${lastSuggestions}</i>`;
+        else
+            suggestionsContainer.innerHTML = `<i>No suggestions available</i>`;
 
     }
     else {
@@ -841,12 +842,32 @@ function parseReadableQuery(response: QueryResponse) {
 }
 
 function parseUnknownQuery(input: string, unknown?: Unknown[]): ConditionCompare | null {
-    // check if starts with unknown, in that case, us it as a query!
+    // check if starts with unknown, or end with unknown
+    // the reason why we even have to do this and can have implicit search by text, is that we got multiple text properties
+    // and the query API can not assume one field from another (currently)
+    
     if (!unknown)
         return null;
     for (let i = 0; i < unknown.length; i++) {
         const u = unknown[i];
         if (u.offset == 0 && u.length > 2) {
+            let value = input.substring(u.offset, u.offset + u.length);
+
+            // Starts with unknown?
+            if(value.startsWith("\"") && value.endsWith("\""))
+            {
+                value = value.substring(1, value.length-1);
+            }
+            return {
+                compare:
+                {
+                    key: allWordsKey,
+                    eq: value
+                }
+            }
+        
+        }
+        if (u.offset + u.length == input.length) {
             let value = input.substring(u.offset, u.offset + u.length);
             if(value.startsWith("\"") && value.endsWith("\""))
             {
@@ -859,9 +880,7 @@ function parseUnknownQuery(input: string, unknown?: Unknown[]): ConditionCompare
                     eq: value
                 }
             }
-
         }
-
     }
     return null;
 }
@@ -1209,7 +1228,7 @@ function parseOrdinaryConditions(condition: (ConditionElement), fieldCounter = {
                         }]
                     }
                 }
-            case resultType:
+            case resultTypeKey:
                 {
                     return {
                         queryParams: [{

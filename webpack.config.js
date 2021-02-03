@@ -32,13 +32,8 @@ module.exports = {
         extensions: ['.js', '.ts']
     },
     plugins: [
-        new CleanWebpackPlugin(),
         new CopyWebpackPlugin([{
-            patterns: [
-                {
-                  from: "manifest.json",
-                }
-            ],
+            from: "manifest.json",
             transform: function (content, path) {
               return Buffer.from(JSON.stringify({
                 description: process.env.npm_package_description,
@@ -46,7 +41,17 @@ module.exports = {
                 ...JSON.parse(content.toString())
               }))
             }
-          }]),
+          },
+          {
+            from: "images",
+            to: "images"
+          },
+          {
+            from: "src/popup.js",
+            to: "popup.js"
+          }
+        
+        ]),
         new HtmlWebpackPlugin({
           template: path.join(__dirname, "src", "popup.html"),
           filename: "popup.html",

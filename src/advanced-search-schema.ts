@@ -14,7 +14,7 @@ export const textLocationKey = 'textLocation';
 export const safeSearchKey = 'safeSearch';
 export const fileTypeKey = 'fileType';
 export const licenseKey = 'license';
-export const resultType = 'resultType';
+export const resultTypeKey = 'resultType';
 
 // Images
 /*export const imageSizeKey = 'imageSize';
@@ -28,14 +28,14 @@ export const imageLicenseKey = 'imageLicense';*/
 })
 export class GeneralSearch {
     @FieldInfo({
-        key: resultType,
+        key: resultTypeKey,
         description: 'result type',
         domain: {
-            'isch': ['images', 'pictures'],
-            'vid': ['videos', 'clips'],
-            'nws': ['news'],
+            'isch': ['images', 'pictures','images of', 'pictures of'],
+            'vid': ['videos', 'clips','videos  of', 'clips of'],
+            'nws': ['news','news of'],
             'bks': ['books', 'literature'],
-            'shop': ['shopping', 'shop']
+            'shop': ['shopping', 'shop','buy']
         }
     })
     contentType: string;
@@ -200,7 +200,7 @@ export class GeneralSearch {
     @FieldInfo(
         {
             key: countryKey,
-            description: ['country', 'region'],
+            description: ['country', 'region','from'],
             domain: {
                 "countryAF": "Afghanistan",
                 "countryAL": "Albania",
