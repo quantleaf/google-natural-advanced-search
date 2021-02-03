@@ -1,4 +1,8 @@
 const path = require('path')
+const CleanWebpackPlugin = require("clean-webpack-plugin").CleanWebpackPlugin,
+      CopyWebpackPlugin = require("copy-webpack-plugin"),
+    HtmlWebpackPlugin = require("html-webpack-plugin"),
+    WriteFilePlugin = require("write-file-webpack-plugin");
 module.exports = {
     devtool: 'inline-source-map',
     entry: {
@@ -27,4 +31,34 @@ module.exports = {
         ],
         extensions: ['.js', '.ts']
     },
+    plugins: [
+        // clean the build folder
+        new CleanWebpackPlugin(),
+        new CopyWebpackPlugin([{
+            patterns: [
+                {
+                  from: "manifest.json",
+                }
+            ],
+            transform: function (content, path) {
+              // generates the manifest file using the package.json informations
+              return Buffer.from(JSON.stringify({
+                description: process.env.npm_package_description,
+                version: process.env.npm_package_version,
+                ...JSON.parse(content.toString())
+              }))
+            }
+          }]),
+        new HtmlWebpackPlugin({
+          template: path.join(__dirname, "src", "popup.html"),
+          filename: "popup.html",
+          chunks: ["popup"]
+        }),
+        new HtmlWebpackPlugin({
+          template: path.join(__dirname, "src", "help.html"),
+          filename: "help.html",
+          chunks: ["help"]
+        }),
+        new WriteFilePlugin()
+    ]
 }

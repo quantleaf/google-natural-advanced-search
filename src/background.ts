@@ -22,6 +22,6 @@ chrome.tabs.onUpdated.addListener(
 
 chrome.runtime.onMessage.addListener(function(message){
   if (message == "__new_help_tab__"){
-     chrome.tabs.create({ url: '/src/help.html'});
+     chrome.tabs.create({ url: '/help.html'});
   }
 });

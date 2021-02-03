@@ -541,7 +541,7 @@ async function restoreLastSearchQuery() {
         return;
     }
     sess = lastRestoredState;
-    if(sess.parsedQuery?.searchParams != lastSearchField?.value) // Different tabs or something has changed
+    if(!sess || sess.parsedQuery?.searchParams != lastSearchField?.value) // Different tabs or something has changed
     {
         sess = {}
         return; 

@@ -1,7 +1,7 @@
 const path = require('path')
 const webpack = require('webpack')
 const CleanWebpackPlugin = require("clean-webpack-plugin").CleanWebpackPlugin,
- //   CopyWebpackPlugin = require("copy-webpack-plugin"),
+    CopyWebpackPlugin = require("copy-webpack-plugin"),
     HtmlWebpackPlugin = require("html-webpack-plugin"),
     WriteFilePlugin = require("write-file-webpack-plugin");
 
@@ -34,17 +34,17 @@ module.exports = {
         extensions: ['.js', '.ts']
     },
    /* plugins: [
-        new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify('production')
-        })
+       
         ,new webpack.optimize.AggressiveMergingPlugin()
     ]*/
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify('production')
+        }),
         // clean the build folder
         new CleanWebpackPlugin(),
         // expose and write the allowed env vars on the compiled bundle
-        new webpack.EnvironmentPlugin(["NODE_ENV"]),
-   /*     new CopyWebpackPlugin([{
+        new CopyWebpackPlugin([{
           patterns: [
               {
                 from: "manifest.json",
@@ -58,7 +58,7 @@ module.exports = {
               ...JSON.parse(content.toString())
             }))
           }
-        }]),*/
+        }]),
         new HtmlWebpackPlugin({
           template: path.join(__dirname, "src", "popup.html"),
           filename: "popup.html",
@@ -66,13 +66,8 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
           template: path.join(__dirname, "src", "help.html"),
-          filename: "options.html",
-          chunks: ["options"]
-        }),
-        new HtmlWebpackPlugin({
-          template: path.join(__dirname, "src", "background.html"),
-          filename: "background.html",
-          chunks: ["background"]
+          filename: "help.html",
+          chunks: ["help"]
         }),
         new WriteFilePlugin()
       ]

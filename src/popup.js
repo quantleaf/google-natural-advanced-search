@@ -9,7 +9,7 @@ chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
     }
     else 
     {
-        chrome.tabs.create({ url: '/src/help.html'});
+        chrome.tabs.create({ url: '/help.html'});
     }
 });
 
