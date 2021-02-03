@@ -1,5 +1,5 @@
 # Natural Advanced Search for Google™
-This is a small chrome extension which lets you twitter search fields auto detect search that resembles "advanced search", that is currently today accessible through the advanced search UI or through their own syntax that might not be the easiest. It supports all possible advanced searches!
+Make Google Search fields auto detect search that resembles "advanced search" and perform them. Advanced search is currently today accessible through the advanced search UI in a combination with their own syntax. This extension combines both into a natural language experience.
 ![Demo search](/../master/snap2.png?raw=true)
 
 ## How to use

@@ -43,6 +43,7 @@ var lastRestoredState: QuerySession;
 var scrollingEventPerforming = false;
 var insertedLastUnparsedQuery = false;
 var hasTypedAnything = false;
+var load: Promise<any>;
 
 // UI
 var advancedSearchElementWrapper = document.createElement('div');
@@ -51,8 +52,6 @@ advancedSearchElementWrapper.style.zIndex = '1000';
 var advancedSearchElement = document.createElement('div');
 advancedSearchElementWrapper.appendChild(advancedSearchElement);
 advancedSearchElement.style.position = 'fixed'
-//advancedSearchElement.style.left = '100%';
-//advancedSearchElement.style.top = '0px';
 var expandedContainer = document.createElement('div');
 expandedContainer.style.backgroundColor = "white";
 expandedContainer.style.padding = "20px";
@@ -90,11 +89,11 @@ minimizedContainer.style.backgroundColor = 'white';
 minimizedContainer.style.height = '24px';
 minimizedContainer.style.width = '24px';
 minimizedContainer.style.borderRadius = '24px';
-minimizedContainer.onmouseenter = function () {
+minimizedContainer.onmouseenter =  () => {
     minimizedContainer.style.boxShadow = "rgb(64 60 67 / 34%) 0px 2px 8px 1px";
 };
 
-minimizedContainer.onmouseleave = function () {
+minimizedContainer.onmouseleave =  () => {
     setScrollStyle();
 };
 
@@ -177,15 +176,14 @@ helpButton.innerHTML = 'What can I write?'
 helpButton.style.marginLeft = "auto";
 helpButton.style.marginBottom = "4px";
 helpButton.style.cursor = "pointer";
-helpButton.onmouseenter = function () {
+helpButton.onmouseenter = () => {
     helpButton.style.textDecoration = 'underline'
 };
 
-helpButton.onmouseleave = function () {
+helpButton.onmouseleave = () => {
     helpButton.style.textDecoration = ''
 };
-helpButton.onclick = function () 
-{
+helpButton.onclick = () => {
     chrome.runtime.sendMessage("__new_help_tab__");
 }
 footer.appendChild(helpButton);
@@ -198,15 +196,14 @@ tip.innerHTML = showKeyswWordsHTML;;
 tip.style.marginLeft = "auto";
 tip.style.cursor = "pointer";
 
-tip.onmouseenter = function () {
+tip.onmouseenter = () => {
     tip.style.textDecoration = 'underline'
 };
 
-tip.onmouseleave = function () {
+tip.onmouseleave = () => {
     tip.style.textDecoration = ''
 };
-tip.onclick = function () 
-{
+tip.onclick = () => {
     showSuggestions = !showSuggestions;
     printSuggestions();
 }
@@ -215,7 +212,7 @@ tip.onclick = function ()
 footer.appendChild(tip);
 textContent.appendChild(footer);
 
-function findElementWithShadowOrBorder(element: (HTMLElement | undefined | null)) {
+const findElementWithShadowOrBorder = (element: (HTMLElement | undefined | null)) => {
     let curr: (HTMLElement | undefined | null) = element;
     while (curr) {
         const style = window.getComputedStyle(curr as HTMLElement);
@@ -229,27 +226,15 @@ function findElementWithShadowOrBorder(element: (HTMLElement | undefined | null)
 }
 
 
-function setDynamicStyle() {
-
-    // const inputWrapperStyle = window.getComputedStyle(formInputParent as HTMLElement);
-    // (formInputParent as HTMLElement).style.display = "flex";
-    /*if(formInputParent)
-    {
-        formInputParent.style.zIndex = "1000";
-        formInputParent.style.position = "relative";
-    }*/
-   
-
-}
-
-function setScrollStyle() {
-    if(!formInputParent)
+const setDynamicStyle = () => {}
+const setScrollStyle = () => {
+    if (!formInputParent)
         return;
     const inputWrapperStyle = window.getComputedStyle(formInputParent as HTMLElement);
     const br = formInputParent?.getBoundingClientRect() as DOMRect;
     advancedSearchElement.style.left = `${br?.x + br?.width}px`
     advancedSearchElement.style.top = `${br?.y}px`
-    minimizedContainer.style.boxShadow = formInputParent.style.boxShadow && formInputParent.style.boxShadow != 'none' ?  formInputParent.style.boxShadow : inputWrapperStyle.boxShadow ;
+    minimizedContainer.style.boxShadow = formInputParent.style.boxShadow && formInputParent.style.boxShadow != 'none' ? formInputParent.style.boxShadow : inputWrapperStyle.boxShadow;
     minimizedContainer.style.height = inputWrapperStyle.height;
     minimizedContainer.style.width = inputWrapperStyle.height;
     let viewBox: string | null = "0 0 24 24";
@@ -262,234 +247,13 @@ function setScrollStyle() {
         height = window.getComputedStyle(defaultSearchButtonIcon).height;
     }
     minimizedContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="#4285f4" viewBox="${viewBox}" width="${width}" height="${height}"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>`
-    
-    
-    //minimizedContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="#4285f4" viewBox="${viewBox}" width="${width}" height="${height}"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>`
-    //
-    //minimizedContainerIcon.style.width =  ;
-    //minimizedContainerIcon.style.height =  window.getComputedStyle(defaultSearchButton).height;
-
-
 }
 
-// Add listeners for the search field, and set colors for styling (depending on color mode, light, dim, dark)
-async function initialize() {
-    var inserted = false;
-    let maxTriesFind = 50;
-    let findCounter = 0;
-    while (!inserted) {
-        const searchField = document.querySelector('form * input[spellcheck="false"]') as HTMLInputElement;
-        findCounter++;
-        if (findCounter > maxTriesFind)
-            break;
-        if (searchField)
-            inserted = true;
-        else {
-            await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 sec
-            continue;
-        }
-        if (lastSearchField === searchField)
-            return;
-        lastSearchField = searchField;
 
-        // defaultSearchButtonIcon = document.querySelector('form * button * svg');
-        //  formInputParent = defaultSearchButtonIcon?.parentElement?.parentElement?.parentElement?.parentElement;
-        formInputParent = findElementWithShadowOrBorder(searchField?.parentElement?.parentElement?.parentElement);
-        if (formInputParent)
-            formInputParent.appendChild(advancedSearchElementWrapper);
-        //defaultSearchButton = document.querySelector('form * button[type="submit"]');
-        setDynamicStyle();
-        setScrollStyle();
-        restoreLastSearchQuery();
-        toggleVisuals(false);
-
-        document.addEventListener("keydown", event => {
-            if (event.keyCode === 13) {
-                event.cancelBubble = true;
-                event.stopImmediatePropagation();
-                event.stopPropagation();
-                event.preventDefault();
-                navigateSearch(ctrlDown);
-                return;
-            }
-        }, {
-            capture: true
-
-        });
-
-        lastSearchField.addEventListener("keydown", event => {
-            if (event.keyCode === 13) {
-                event.cancelBubble = true;
-                event.stopImmediatePropagation();
-                event.stopPropagation();
-                event.preventDefault();
-                navigateSearch(ctrlDown);
-                return;
-            }
-        }, {
-            capture: true
-
-        });
-
-        lastSearchField.addEventListener("keyup", event => {
-            hasTypedAnything = true;
-            sess.unparsedQuery = event.target && event.target['value'] ? event.target['value'] : '';
-            sess.lastReadableQuery = undefined;
-            sess.lastResponse = undefined;
-            sess.parsedQuery = undefined;
-            setTimeout(() => {
-
-                if ((lastRequestTime + debounceTime) < new Date().getTime()) {
-
-                    getResult(lastSearchField?.value).then(() => {
-                        // Hide or show
-                        if (sess.lastReadableQuery && !expanded) {
-                            expandedOpenedManually = false;
-                            toggleVisuals(true);
-                        }
-
-                        else if (!sess.lastReadableQuery && !expandedOpenedManually) {
-
-                            toggleVisuals(false); // The suggestions have opened automatically, hence we also close automatically
-                        }
-                        saveState();
-                    });
-
-
-                }
-            }, debounceTime + 1);
-            lastRequestTime = new Date().getTime();
-        });
-        lastSearchField.addEventListener("click", () => {
-            
-            restoreSearchFieldText();
-
-            let showExpanded = !!sess.lastResponse?.query && sess.lastResponse.query.length > 0;
-            if (!showExpanded && expanded) {
-                showExpanded = true;
-            }
-            toggleVisuals(showExpanded || expandedOpenedManually);
-
-        });
-
-        minimizedContainer.addEventListener("click", event => {
-
-            restoreSearchFieldText(); 
-
-            expandedOpenedManually = true;
-            showSuggestions = true;
-            printSuggestions();
-            toggleVisuals(true);
-
-            event.stopPropagation();
-            event.stopImmediatePropagation();
-        });
-
-
-        searchButton.addEventListener("click", () => {
-            navigateSearch(true);
-        })
-
-        document.body.addEventListener("keydown", event => {
-            if (event.keyCode === 17) {
-                ctrlDown = true;
-                return;
-            }
-        });
-        document.body.addEventListener("keyup", event => {
-            if (event.keyCode === 17) {
-                ctrlDown = false;
-            }
-            if (event.keyCode === 32) {
-                // Space clicked, toggle suggestions
-                if (ctrlDown) {
-                    showSuggestions = !showSuggestions;
-                    if (!expanded)
-                        showSuggestions = true;
-                    printSuggestions();
-                    expandedOpenedManually = true;
-                    if(showSuggestions)
-                        toggleVisuals(true);
-                }
-                return;
-            }
-        });
-
-
-        window.addEventListener('click', function (e) {
-            if (e.target)
-                if (expandedContainer.contains(e.target as Node) || formInputParent?.contains(e.target as Node)) {
-                    // clicked somewhere that should not minimize the advanced search popup
-                } else {
-                    if (expanded) {
-                        toggleVisuals(false, true);
-
-                    }
-                }
-        });
-
-        document.addEventListener('scroll', function () {
-            if (!scrollingEventPerforming) {
-                window.requestAnimationFrame(function() {
-                    setScrollStyle();
-                    setTimeout(() => {
-                        setScrollStyle();
-                    }, 50); // Seems to fix problem with fast scroll not providing correct computed styles
-                    scrollingEventPerforming = false;
-                });
-
-                scrollingEventPerforming = true;
-            }
-        });
-        
-        window.addEventListener('resize',function() {
-            setScrollStyle();
-        });
-
-    }
-}
-
-initialize(); // Starting point 1
-chrome.runtime.onMessage.addListener(
-    function (request) {
-        if (request.message === '__new_url_ql__') {
-            initialize();  // Starting point 2
-        }
-    });
-/*
-MutationObserver = window.MutationObserver;
-
-var observer = new MutationObserver(function() {
-    setTimeout(() => {
-        setScrollStyle();
-    }, 10);
-});
-
-observer.observe(document, {
-    subtree: true,
-    attributes: true,
-});*/
 
 
 // The search experience, code that define the translation to natural language to the generalized query structure
 // and code that transform the generalized query structure into twitter query syntax
-
-// We hard code the keys since we are to reference them on two places
-/*const dateKey = 'date';
-const allWordsKey = 'allWordsKey';
-const anyOfKey = 'anyOf';
-const exactPhraseKey = 'exactPhrase';
-const notAnyOfKey = 'nonOf';
-const numbersRangeKey = 'numbersRange';
-const unitKey = 'unit';
-const languageKey = 'language';
-const countryKey = 'country';*/
-/*const updatedLatestKey = 'updatedLatest';
-const termLocationsKey = 'termLocations';
-const safeSearchKey = 'safeSearch';
-const fileTypeKey = 'fileType';
-const rightsKey = 'rights';
-*/
 
 // Some rules about twitter advanced filter
 const maxFieldUsages = {
@@ -531,14 +295,18 @@ schemas.forEach((s) => {
 })
 
 
-function saveState() {
-    chrome.storage.sync.set({ lastQuerySession: sess });
+const  saveState = async()  => {
+    return await new Promise((resolve) => {
+        chrome.storage.sync.set({ lastQuerySession: sess }, () => {
+            resolve(true);
+        })
+    });
 }
-async function restoreLastSearchQuery() {
+const restoreLastSearchQuery = async() => {
     if (!lastSearchField)
         return;
-    lastRestoredState = await new Promise(function (resolve) {
-        chrome.storage.sync.get('lastQuerySession', function (data) {
+    lastRestoredState = await new Promise((resolve) => {
+        chrome.storage.sync.get('lastQuerySession', (data) => {
             resolve(data.lastQuerySession);
         });
     }) as QuerySession;
@@ -555,18 +323,32 @@ async function restoreLastSearchQuery() {
     }
 
 }
-function restoreSearchFieldText()
-{
-    if(!insertedLastUnparsedQuery && sess.unparsedQuery)
-    {
+
+const debounce = <T extends (...args: any[]) => any>(
+    callback: T,
+    waitFor: number
+  ) => {
+    let timeout = 0;
+    return (...args: Parameters<T>): ReturnType<T> => {
+      let result: any;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        result = callback(...args);
+      }, waitFor);
+      return result;
+    };
+};
+
+const restoreSearchFieldText = () => {
+    if (!insertedLastUnparsedQuery && sess.unparsedQuery) {
         insertText(sess.unparsedQuery, true);
         insertedLastUnparsedQuery = true;
     }
 }
-function navigateSearch(useAdvancedSearch: boolean) {
+const navigateSearch = async (useAdvancedSearch: boolean) => {
 
-
-    saveState();
+    await load;
+    await saveState();
     if (sess.parsedQuery && useAdvancedSearch) // Only change value if we actually have parsed any query
     {
         // insertText(lastParsedQuery.searchParams, true);
@@ -581,29 +363,28 @@ function navigateSearch(useAdvancedSearch: boolean) {
         let newUrl = window.location.href;
         if (lastSearchField) {
             const urlObj = new URL(newUrl);
+
+            // set query text
             urlObj.searchParams.set('q', lastSearchField.value);
+
+            // There properties seems, or may cause problems
             urlObj.searchParams.delete('as_q');
             urlObj.searchParams.delete('oq');
             urlObj.searchParams.delete('as_filetype');
-            if(urlObj.pathname != urlSearchPath)
-            {
+            if (urlObj.pathname != urlSearchPath) {
                 urlObj.pathname = urlSearchPath;
             }
             newUrl = urlObj.toString();
-            
+
         }
-
-        
-
 
         if (lastRestoredState) {
             newUrl = decodeURI(newUrl);
             const urlParams = searchQueryParamsByKey(lastRestoredState.parsedQuery);
             const urlObj = new URL(newUrl);
-            urlParams.forEach((param,key) => {
-                const value = urlObj.searchParams.get(key) ;
-                if(value == param || value == encodeURIComponent(param))
-                {
+            urlParams.forEach((param, key) => {
+                const value = urlObj.searchParams.get(key);
+                if (value == param || value == encodeURIComponent(param)) {
                     urlObj.searchParams.delete(key);
 
                 }
@@ -624,19 +405,19 @@ function navigateSearch(useAdvancedSearch: boolean) {
 const suggestLimit = 10;
 
 // The Quantleaf Query API call
-async function getResult(input: string = '') {
+const getResult = async (input: string = '') => {
     await apiKeySetup;
     const resp = await translate(input, schemaObjects, { query: {}, suggest: { limit: suggestLimit + 1 } }, { nestedConditions: false, concurrencySize: 1 })
     handleResponse(input, resp);
 }
 
 // Injects advanced search UI as the first result element
-function handleResponse(input: string, responseBody?: QueryResponse) {
+const handleResponse = (input: string, responseBody?: QueryResponse) => {
 
     sess.lastResponse = responseBody;
     sess.parsedQuery = {}
 
- //EnumDomainUtils
+    //EnumDomainUtils
 
 
     // Suggestions
@@ -691,19 +472,17 @@ function handleResponse(input: string, responseBody?: QueryResponse) {
     else
         noResultsPrint()
 }
-function resultPrint(readable:string)
-{
+const resultPrint = (readable: string) => {
     textContainer.innerHTML = readable;
 }
 
 
-function noResultsPrint()
-{
+const noResultsPrint = () => {
     textContainer.innerHTML = 'No results';
 
 }
 
-function toggleVisuals(showExpanded: boolean, force?: boolean) {
+const toggleVisuals = (showExpanded: boolean, force?: boolean) => {
 
     if (expanded == showExpanded && initializedUI)
         return;
@@ -737,12 +516,7 @@ function toggleVisuals(showExpanded: boolean, force?: boolean) {
     }
     setScrollStyle();
 }
-/*
-function insertHidden() {
-    insertText('‎', false) // trigger change 
-
-}*/
-function insertText(text?: string, clear?: boolean) {
+const insertText = (text?: string, clear?: boolean) => {
     if (lastSearchField) {
         (lastSearchField as HTMLInputElement).focus();
         if (clear)
@@ -753,49 +527,45 @@ function insertText(text?: string, clear?: boolean) {
 
 }
 
-function searchFieldTextFromParsedQuery(parsedQuery?: ParsedQuery) {
+const searchFieldTextFromParsedQuery = (parsedQuery?: ParsedQuery) => {
     if (!parsedQuery)
         return undefined;
     return (parsedQuery.searchParamsPre ? parsedQuery.searchParamsPre : '') + parsedQuery.searchParams as string;
 }
 
-function searchQueryParamsByKey(parsedQuery?: ParsedQuery):Map<string,string> {
+const searchQueryParamsByKey = (parsedQuery?: ParsedQuery): Map<string, string> => {
     if (!parsedQuery?.queryParams)
         return new Map();
-    const groups = new Map<string,string[]>();
-    parsedQuery?.queryParams.forEach((q)=>
-    {
+    const groups = new Map<string, string[]>();
+    parsedQuery?.queryParams.forEach((q) => {
         let arr = groups.get(q.key);
-        if(!arr)
-        {
+        if (!arr) {
             arr = [];
-            groups.set(q.key,arr);
+            groups.set(q.key, arr);
         }
         arr.push(q.value);
     });
-    const groupsJoined = new Map<string,string>();
-    groups.forEach((v,k)=>
-    {
+    const groupsJoined = new Map<string, string>();
+    groups.forEach((v, k) => {
         groupsJoined.set(k, v.join(','));
     })
     return groupsJoined;
 }
 
 
-function searchQueryParamsFromParsedQuery(parsedQuery?: ParsedQuery) {
+const searchQueryParamsFromParsedQuery = (parsedQuery?: ParsedQuery) => {
     const groups = searchQueryParamsByKey(parsedQuery);
-    const urlParams:string[] = [];
-    groups.forEach((v,k)=>
-    {
+    const urlParams: string[] = [];
+    groups.forEach((v, k) => {
         urlParams.push(`${k}=${v}`);
     })
-    const par =  urlParams.join('&');
-    if(par.length > 0)
+    const par = urlParams.join('&');
+    if (par.length > 0)
         return '&' + par;
     return par;
 }
 
-function navigateToQuery(parsedQuery: ParsedQuery) {
+const navigateToQuery = (parsedQuery: ParsedQuery) => {
     const searchQuery = searchFieldTextFromParsedQuery(parsedQuery);
     const urlParams = searchQueryParamsFromParsedQuery(parsedQuery);
     const toEncode = `https://${window.location.hostname}${urlSearchPath}?q=${searchQuery}${urlParams}`;
@@ -806,11 +576,10 @@ function navigateToQuery(parsedQuery: ParsedQuery) {
 
 
 
-
-function printSuggestions() {
+const printSuggestions = () => {
     tip.innerHTML = showSuggestions ? hideKeyswWordsHTML : showKeyswWordsHTML;
     if (showSuggestions) {
-        if(lastSuggestions)
+        if (lastSuggestions)
             suggestionsContainer.innerHTML = `Suggestions</br><i>${lastSuggestions}</i>`;
         else
             suggestionsContainer.innerHTML = `<i>No suggestions available</i>`;
@@ -822,10 +591,8 @@ function printSuggestions() {
 }
 
 
-
 // Readable representation of the query object
-
-function parseReadableQuery(response: QueryResponse) {
+const parseReadableQuery = (response: QueryResponse) => {
     let condition: ConditionElement = null as any;
     if (response?.query && response.query.length > 0) {
         condition = response.query[0].condition;
@@ -841,7 +608,7 @@ function parseReadableQuery(response: QueryResponse) {
     return ret.join('\n');
 }
 
-function parseUnknownQuery(input: string, unknown?: Unknown[]): ConditionCompare | null {
+const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare | null => {
     // check if starts with unknown, or end with unknown
     // the reason why we even have to do this and can have implicit search by text, is that we got multiple text properties
     // and the query API can not assume one field from another (currently)
@@ -854,9 +621,8 @@ function parseUnknownQuery(input: string, unknown?: Unknown[]): ConditionCompare
             let value = input.substring(u.offset, u.offset + u.length);
 
             // Starts with unknown?
-            if(value.startsWith("\"") && value.endsWith("\""))
-            {
-                value = value.substring(1, value.length-1);
+            if (value.startsWith("\"") && value.endsWith("\"")) {
+                value = value.substring(1, value.length - 1);
             }
             return {
                 compare:
@@ -865,13 +631,12 @@ function parseUnknownQuery(input: string, unknown?: Unknown[]): ConditionCompare
                     eq: value
                 }
             }
-        
+
         }
         if (u.offset + u.length == input.length) {
             let value = input.substring(u.offset, u.offset + u.length);
-            if(value.startsWith("\"") && value.endsWith("\""))
-            {
-                value = value.substring(1, value.length-1);
+            if (value.startsWith("\"") && value.endsWith("\"")) {
+                value = value.substring(1, value.length - 1);
             }
             return {
                 compare:
@@ -884,7 +649,7 @@ function parseUnknownQuery(input: string, unknown?: Unknown[]): ConditionCompare
     }
     return null;
 }
-function parseReadableOrdinaryQuery(condition: (ConditionAnd | ConditionCompare)) {
+const parseReadableOrdinaryQuery = (condition: (ConditionAnd | ConditionCompare)) => {
     if ((condition as ConditionAnd).and) {
         const and: string[] = [];
         (condition as ConditionAnd).and.forEach((element) => {
@@ -920,7 +685,7 @@ function parseReadableOrdinaryQuery(condition: (ConditionAnd | ConditionCompare)
     return '';
 }
 
-function parseReadableNumberRangeCondition(condition: (ConditionAnd | ConditionCompare)) {
+const parseReadableNumberRangeCondition = (condition: (ConditionAnd | ConditionCompare)) => {
     const parsedCondition = parseNumberRangeConditionNumbersAndUnit(condition);
     const oneDescription = firstDescription(fieldsByKey[numbersRangeKey].description)
     if (!parsedCondition.from && !parsedCondition.to)
@@ -928,7 +693,7 @@ function parseReadableNumberRangeCondition(condition: (ConditionAnd | ConditionC
     return `${oneDescription} ${parsedCondition.from != undefined ? parsedCondition.from + ' ' : ''}to ${parsedCondition.to != undefined ? parsedCondition.to : ''}${parsedCondition.unit ? ' ' + parsedCondition.unit : ''}`;
 
 }
-function parseNumberRangeConditionNumbersAndUnit(condition: (ConditionAnd | ConditionCompare)): { from?: number, to?: number, unit?: string } {
+const parseNumberRangeConditionNumbersAndUnit = (condition: (ConditionAnd | ConditionCompare)): { from?: number, to?: number, unit?: string } => {
     const ret: { from?: number, to?: number, unit?: string } = {};
     let and = (condition as ConditionAnd).and;
     if ((condition as ConditionCompare).compare) {
@@ -1003,7 +768,7 @@ function parseNumberRangeConditionNumbersAndUnit(condition: (ConditionAnd | Cond
 
 
 
-function parseQueryResponse(condition: (ConditionCompare | ConditionAnd)): ParsedQuery {
+const parseQueryResponse = (condition: (ConditionCompare | ConditionAnd)): ParsedQuery => {
     if (!condition)
         return {};
 
@@ -1013,7 +778,7 @@ function parseQueryResponse(condition: (ConditionCompare | ConditionAnd)): Parse
     return mergeParsedQueries([ordinaryConditions, dateConditions, numberRangeCondition])
 }
 
-function parseNumberRangeCondition(condition): ParsedQuery {
+const parseNumberRangeCondition = (condition): ParsedQuery => {
     const parsedCondition = parseNumberRangeConditionNumbersAndUnit(condition)
     if (parsedCondition.to == undefined && parsedCondition.from == undefined)
         return {};
@@ -1022,7 +787,7 @@ function parseNumberRangeCondition(condition): ParsedQuery {
     };
 }
 
-function mergeParsedQueries(queries: ParsedQuery[]): ParsedQuery {
+const mergeParsedQueries = (queries: ParsedQuery[]): ParsedQuery => {
     const searchParamsBuilder: string[] = [];
     const queryParamsBuilder: any[] = [];
     const searcParamsPreBuilder: string[] = [];
@@ -1049,7 +814,7 @@ function mergeParsedQueries(queries: ParsedQuery[]): ParsedQuery {
 
 }
 
-function parseDateConditions(condition: (ConditionAnd | ConditionCompare)): ParsedQuery {
+const parseDateConditions = (condition: (ConditionAnd | ConditionCompare)): ParsedQuery => {
     const dateConditions: string[] = [];
     let and = (condition as ConditionAnd).and;
     if ((condition as ConditionCompare).compare) {
@@ -1083,13 +848,12 @@ function parseDateConditions(condition: (ConditionAnd | ConditionCompare)): Pars
     if (dateConditions && dateConditions.length > 0) {
         dateConditions.push('cdr:1');
         return {
-            queryParams: dateConditions.map(q => 
-                {
-                    return {
-                        key: 'tbs',
-                        value: q
-                    }
-                })
+            queryParams: dateConditions.map(q => {
+                return {
+                    key: 'tbs',
+                    value: q
+                }
+            })
         };
 
     }
@@ -1099,7 +863,7 @@ function parseDateConditions(condition: (ConditionAnd | ConditionCompare)): Pars
 
 
 
-function parseOrdinaryConditions(condition: (ConditionElement), fieldCounter = {}): ParsedQuery {
+const parseOrdinaryConditions = (condition: (ConditionElement), fieldCounter = {}): ParsedQuery => {
     if (!condition)
         return {};
     if ((condition as ConditionAnd).and) {
@@ -1212,9 +976,9 @@ function parseOrdinaryConditions(condition: (ConditionElement), fieldCounter = {
             case fileTypeKey:
                 {
                     let value = String(comp.eq);
-                    if(value.startsWith('.'))
+                    if (value.startsWith('.'))
                         value = value.substring(1);
-                    
+
                     return {
                         searchParams: 'fileType:' + value
                     }
@@ -1243,13 +1007,13 @@ function parseOrdinaryConditions(condition: (ConditionElement), fieldCounter = {
     return {};
 
 }
-function wordSplit(words) {
+const wordSplit = (words) => {
     if (!words)
         return [];
     return words.replace(/,\s+/g, ",").split(/[\n,\s+]/)
 }
 
-function formatDate(ms) {
+const formatDate = (ms) => {
     const date = new Date(ms);
     var year = date.getFullYear();
 
@@ -1261,18 +1025,18 @@ function formatDate(ms) {
     return month + '/' + day + '/' + year;
 
 }
-function dayBefore(ms) {
+const dayBefore = (ms) => {
     var date = new Date(ms);
     date.setDate(date.getDate() - 1);
     return date.getTime();
 }
 
-function dayAfter(ms) {
+const dayAfter = (ms) => {
     var date = new Date(ms);
     date.setDate(date.getDate() + 1);
     return date.getTime();
 }
-function formatValue(key, value) {
+const formatValue = (key, value) => {
     const field = fieldsByKey[key];
     if (field.domain == 'DATE') {
         return formatDate(value);
@@ -1286,7 +1050,7 @@ function formatValue(key, value) {
 
     return value;
 }
-function firstDescription(desc) {
+const firstDescription = (desc) => {
     if (Array.isArray(desc))
         return desc[0];
     if (desc['ANY'])
@@ -1299,3 +1063,193 @@ function firstDescription(desc) {
     return '';
 }
 
+
+
+// Add listeners for the search field, and set colors for styling (depending on color mode, light, dim, dark)
+const  initialize = async() => {
+    var inserted = false;
+    let maxTriesFind = 50;
+    let findCounter = 0;
+    while (!inserted) {
+        const searchField = document.querySelector('form * input[spellcheck="false"]') as HTMLInputElement;
+        findCounter++;
+        if (findCounter > maxTriesFind)
+            break;
+        if (searchField)
+            inserted = true;
+        else {
+            await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 sec
+            continue;
+        }
+        if (lastSearchField === searchField)
+            return;
+        lastSearchField = searchField;
+        formInputParent = findElementWithShadowOrBorder(searchField?.parentElement?.parentElement?.parentElement);
+        if (formInputParent)
+            formInputParent.appendChild(advancedSearchElementWrapper);
+        setDynamicStyle();
+        setScrollStyle();
+        restoreLastSearchQuery();
+        toggleVisuals(false);
+
+        document.addEventListener("keydown", event => {
+            if (event.keyCode === 13) {
+                event.cancelBubble = true;
+                event.stopImmediatePropagation();
+                event.stopPropagation();
+                event.preventDefault();
+                navigateSearch(ctrlDown);
+                return;
+            }
+        }, {
+            capture: true
+
+        });
+
+        lastSearchField.addEventListener("keydown", event => {
+            if (event.keyCode === 13) {
+                event.cancelBubble = true;
+                event.stopImmediatePropagation();
+                event.stopPropagation();
+                event.preventDefault();
+
+                // Do search
+                navigateSearch(ctrlDown);
+                return;
+            }
+        }, {
+            capture: true
+
+        });
+
+        lastSearchField.addEventListener("keyup", event => {
+            hasTypedAnything = true;
+            sess.unparsedQuery = event.target && event.target['value'] ? event.target['value'] : '';
+            sess.lastReadableQuery = undefined;
+            sess.lastResponse = undefined;
+            sess.parsedQuery = undefined;
+            load = new Promise((resolve) => {
+                console.log('A')
+                debounce(() => {
+                    console.log('B')
+                    if ((lastRequestTime + debounceTime) < new Date().getTime()) {
+
+                        getResult(lastSearchField?.value).then(() => {
+                            // Hide or show
+                            if (sess.lastReadableQuery && !expanded) {
+                                expandedOpenedManually = false;
+                                toggleVisuals(true);
+                            }
+                            else if (!sess.lastReadableQuery && !expandedOpenedManually) {
+                                toggleVisuals(false); // The suggestions have opened automatically, hence we also close automatically
+                            }
+                            saveState().then(() => {
+                                resolve(true);
+                            }
+                            );
+                        });
+
+
+                    }
+                }, debounceTime + 1)();
+            });
+
+            lastRequestTime = new Date().getTime();
+        });
+        lastSearchField.addEventListener("click", () => {
+
+            restoreSearchFieldText();
+
+            let showExpanded = !!sess.lastResponse?.query && sess.lastResponse.query.length > 0;
+            if (!showExpanded && expanded) {
+                showExpanded = true;
+            }
+            toggleVisuals(showExpanded || expandedOpenedManually);
+
+        });
+
+        minimizedContainer.addEventListener("click", event => {
+
+            restoreSearchFieldText();
+
+            expandedOpenedManually = true;
+            showSuggestions = true;
+            printSuggestions();
+            toggleVisuals(true);
+
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+        });
+
+
+        searchButton.addEventListener("click", () => {
+            navigateSearch(true);
+        })
+
+        document.body.addEventListener("keydown", event => {
+            if (event.keyCode === 17) {
+                ctrlDown = true;
+                return;
+            }
+        });
+        document.body.addEventListener("keyup", event => {
+            if (event.keyCode === 17) {
+                ctrlDown = false;
+            }
+            if (event.keyCode === 32) {
+                // Space clicked, toggle suggestions
+                if (ctrlDown) {
+                    showSuggestions = !showSuggestions;
+                    if (!expanded)
+                        showSuggestions = true;
+                    printSuggestions();
+                    expandedOpenedManually = true;
+                    if (showSuggestions)
+                        toggleVisuals(true);
+                }
+                return;
+            }
+        });
+
+
+        window.addEventListener('click',  (e) => {
+            if (e.target)
+                if (expandedContainer.contains(e.target as Node) || formInputParent?.contains(e.target as Node)) {
+                    // clicked somewhere that should not minimize the advanced search popup
+                } else {
+                    if (expanded) {
+                        toggleVisuals(false, true);
+
+                    }
+                }
+        });
+
+        document.addEventListener('scroll', () => {
+            if (!scrollingEventPerforming) {
+                window.requestAnimationFrame(() => {
+                    setScrollStyle();
+                    setTimeout(() => {
+                        setScrollStyle();
+                    }, 50); // Seems to fix problem with fast scroll not providing correct computed styles
+                    scrollingEventPerforming = false;
+                });
+
+                scrollingEventPerforming = true;
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            setScrollStyle();
+        });
+
+    }
+}
+
+
+initialize(); // Starting point 1
+chrome.runtime.onMessage.addListener(
+     (request) => {
+        if (request.message === '__new_url_ql__') {
+            initialize();  // Starting point 2
+        }
+    });
