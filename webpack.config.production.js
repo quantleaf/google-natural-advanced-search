@@ -4,7 +4,6 @@ const CleanWebpackPlugin = require("clean-webpack-plugin").CleanWebpackPlugin,
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     HtmlWebpackPlugin = require("html-webpack-plugin"),
     WriteFilePlugin = require("write-file-webpack-plugin");
-
 module.exports = {
     mode: 'production',
     entry: {
@@ -41,9 +40,7 @@ module.exports = {
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify('production')
         }),
-        // clean the build folder
         new CleanWebpackPlugin(),
-        // expose and write the allowed env vars on the compiled bundle
         new CopyWebpackPlugin([{
           patterns: [
               {
@@ -51,7 +48,6 @@ module.exports = {
               }
           ],
           transform: function (content, path) {
-            // generates the manifest file using the package.json informations
             return Buffer.from(JSON.stringify({
               description: process.env.npm_package_description,
               version: process.env.npm_package_version,
