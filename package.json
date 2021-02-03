@@ -1,6 +1,6 @@
 {
   "name": "@quantleaf/google-natural-advanced-search",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "build/inject.js",
   "repository": "",
   "author": "",
