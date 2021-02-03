@@ -1,5 +1,6 @@
 # Natural Advanced Search for Google™
 This is a small chrome extension which lets you twitter search fields auto detect search that resembles "advanced search", that is currently today accessible through the advanced search UI or through their own syntax that might not be the easiest. It supports all possible advanced searches!
+![Demo search](/../master/snap.PNG?raw=true)
 
 ## How to use
 Install from the XXX or clone the repo and use this as a development extension.
@@ -14,6 +15,6 @@ It uses [query.quantleaf.com](https://query.quantleaf.com) under the hood to con
 <br/>
 <br/>
 
-**Enjoy! 🏄🏼‍♀️**
+**Enjoy! 😎**
 
 // Marcus
