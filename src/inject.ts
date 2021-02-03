@@ -173,7 +173,7 @@ footer.style.display = 'flex';
 footer.style.flexDirection = 'column';
 
 var helpButton = document.createElement('span');
-helpButton.innerHTML = 'What can I to write?'
+helpButton.innerHTML = 'What can I write?'
 helpButton.style.marginLeft = "auto";
 helpButton.style.marginBottom = "4px";
 helpButton.style.cursor = "pointer";
@@ -845,7 +845,7 @@ function parseUnknownQuery(input: string, unknown?: Unknown[]): ConditionCompare
     // check if starts with unknown, or end with unknown
     // the reason why we even have to do this and can have implicit search by text, is that we got multiple text properties
     // and the query API can not assume one field from another (currently)
-    
+
     if (!unknown)
         return null;
     for (let i = 0; i < unknown.length; i++) {
