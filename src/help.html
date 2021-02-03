@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        color: rgb(76, 97, 74);
+        margin: 30px;
+        padding: 10px;
+      }
+      .header 
+      {
+        
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        
+      }
+
+      .logo
+      {
+        object-fit: contain;
+        width: 50px;
+        height: 50px;
+        margin: 30px;
+        margin-left: 0px;
+
+      }
+      .content
+      {
+        max-width: 800px;
+        background-color: white;
+        box-shadow: 0px 0px 10px #d1d1d1;
+        padding: 30px;
+        border-radius: 24px;
+      }
+      .wrapper
+      {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        font-size: medium;
+        align-items: center;
+      }
+      .ex
+      {
+        font-style: italic;
+        font-family: monospace;
+        margin-left: 20px;
+
+      }
+
+    </style>
+     
+  </head>
+  <body>
+      <!--<div class="header">
+        <div class="title-wrapper">
+          <span class="title">Google Natural Advanced Search</span>
+          <span class="sub-title">What you can write</span>
+        </div>
+        <img class="logo" src="https://quantleaf-com-logo.s3.amazonaws.com/logo-tiny.png" />
+      </div>-->
+      <div class="wrapper">
+        <div class="content">
+          <div class="header">
+            <img class="logo" src="/images/logo-128x128.png" />
+            <h1>Natural Advanced Search for Google&trade;</h1>
+          </div>
+          <h2>Usage guide</h2>
+          <h3>Perform search</h3>
+          <p>Press (ctrl) + (enter) to perform the advanced search, or click the search icon button in the popup.</p>
+          <h3>Suggestions</h3>
+          <p>You can show/hide autocomplete suggestions if you press (ctrl) + (space).</p>
+          <h3>If the interpretation is wrong</h3>
+          <p>Try to be more precise. For example, you can change</p>
+          <p class="ex">content apples from one year ago</p>
+          <p>to</p>
+          <p class="ex">content = apples and date > 2020-01-01</p>
+          <p>In some cases, text properties might be interpreted incorrectly. You can prevent this by applying quations, " ... " around the words.</p>
+          <p class="ex">books with content "my journey from one year ago"</p>
+          <p class="ex">books with content my journey from one year ago</p>
+          <p>The first example would imply that we want to find books with the content "my journey from one year ago", while the other would look for books with content "my journey" where the date of the result should at most be from one year ago</p>
+          <h3>Dates</h3>
+          <p>You can search by dates in multiple ways:</p>
+          <p class="ex">news about Barack Obama from 2005-05-05 to 2006-06-06</p>
+          <p class="ex">images with content cats before three years ago</p>
+          <p class="ex">restaurants near me from one year ago</p>
+          <p>Date filter does not work on image and shopping searches</p>
+          <h3>Text content</h3>
+          <p>You can search for what text content should contain, not contain, or might contain:</p>
+          <p class="ex">contains apple</p>
+          <p class="ex">content apples and not contains banana</p>
+          <p class="ex">contains any of apple, banana or pineapple</p>
+          <h3>Text location</h3>
+          <p>You search on content location:</p>
+          <p class="ex">contains apple in title</p>
+          <p class="ex">contains apple in text</p>
+          <p class="ex">contains apple in url</p>
+          <p class="ex">contains apple in links to site</p>
+
+          <h3>News, Videos, Images, Shopping and Books</h3>
+          <p>You can can be more specific about your search by writing the result type:</p>
+          <p></p>
+          <p class="ex">news about apples</p>
+          <p class="ex">videos containing apples</p>
+          <p class="ex">images containing apples</p>
+          <p class="ex">shopping content apples</p>
+          <p class="ex">apple books</p>
+          <h3>File type</h3>
+          <p>Filter results by filetype:</p>
+          <p class="ex">dogs filetype pdf</p>
+          <p class="ex">dogs filetype docx</p>
+          <h3>Website search</h3>
+          <p>You can search on specific website:</p>
+          <p class="ex">website wikipedia.com content cats</p>
+          <h3>Numbers and units</h3>
+          <p>You can search on number and units in ranges</p>
+          <p class="ex">ferrari from 800 to 1200 unit kg</p>
+
+          <h3>SafeSearch</h3>
+          <p>Filter explicit results using SafeSearch:</p>
+          <p class="ex">cats safe search</p>
+  
+          <h3>Language and country</h3>
+          <p>You can query by language and country. Just write the language or country somewhere in the search query:</p>
+          <p class="ex">about apples chinese simplified</p>
+          <p class="ex">about apples Sweden</p>
+          <p>or be more explicit</p>
+          <p class="ex">about apples language chinese simplified</p>
+          <p class="ex">about apples country Sweden</p>
+          <h3>License</h3>
+          <p>You can filter results by license. This does not work with date filters. Results are not always accurate. Examples:</p>
+          <p class="ex">about apples free to use or share</p>
+          <p class="ex">about apples free to use or share even commercially</p>
+          <p class="ex">about apples free to use share or modify</p>
+          <p class="ex">about apples commercial use</p>
+          <h3>Questions, bugs, or feature requests?</h3>
+          <p>Please <a href="https://quantleaf.com/contact">contact us</a></p>
+        </div>
+      </div>
+  </body>
+</html>
+
