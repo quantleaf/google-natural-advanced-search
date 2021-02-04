@@ -24,9 +24,14 @@ const urlSearchPath = "/search";
 // Settings
 const debounceTime = 200; //ms
 const api = 'https://api.query.quantleaf.com';
-const apiKeySetup = fetch(api + '/auth/key/demo').then((resp) => resp.text().then((apiKey) => { config(apiKey); return apiKey }));
+const apiKeySetupFunction = async () =>
+{
+    await fetch(api + '/auth/key/demo').then((resp) => resp.text().then((apiKey) => { config(apiKey); return apiKey })).catch(()=>{ serviceError = true; return null;});
+}
+var apiKeySetup = apiKeySetupFunction();
 
 // State
+var serviceError = false;
 var initializedUI = false;
 var expanded: boolean = false; // pre initalization, then its either true or false
 var expandedOpenedManually: boolean = false;
@@ -1066,10 +1071,15 @@ const firstDescription = (desc) => {
 
 
 // Add listeners for the search field, and set colors for styling (depending on color mode, light, dim, dark)
-const  initialize = async() => {
+const  initialize = async () => {
     var inserted = false;
     let maxTriesFind = 50;
     let findCounter = 0;
+    await apiKeySetup;
+    if(serviceError)
+    {
+        return; // Do initialize UI
+    }
     while (!inserted) {
         const searchField = document.querySelector('form * input[spellcheck="false"]') as HTMLInputElement;
         findCounter++;
@@ -1124,14 +1134,15 @@ const  initialize = async() => {
 
         lastSearchField.addEventListener("keyup", event => {
             hasTypedAnything = true;
-            sess.unparsedQuery = event.target && event.target['value'] ? event.target['value'] : '';
+            const newVal = event.target && event.target['value'] ? event.target['value'] : ''
+            if(newVal == sess.unparsedQuery)
+                return;
+            sess.unparsedQuery = newVal;
             sess.lastReadableQuery = undefined;
             sess.lastResponse = undefined;
             sess.parsedQuery = undefined;
             load = new Promise((resolve) => {
-                console.log('A')
                 debounce(() => {
-                    console.log('B')
                     if ((lastRequestTime + debounceTime) < new Date().getTime()) {
 
                         getResult(lastSearchField?.value).then(() => {
