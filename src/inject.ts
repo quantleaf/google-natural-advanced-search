@@ -615,9 +615,10 @@ const parseReadableQuery = (response: QueryResponse) => {
 
 const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare | null => {
     // check if starts with unknown, or end with unknown
-    // the reason why we even have to do this and can have implicit search by text, is that we got multiple text properties
-    // and the query API can not assume one field from another (currently)
-
+    // the reason why we even have to do this and can't have implicit search by text, is that we got multiple text properties
+    // and the query API can not assume one field from another (currently). In fact it cant assume text properties implicitly at all currently.
+    // It only works for Date, Number and Enums currently. 
+    
     if (!unknown)
         return null;
     for (let i = 0; i < unknown.length; i++) {
