@@ -260,16 +260,6 @@ const setScrollStyle = () => {
 // The search experience, code that define the translation to natural language to the generalized query structure
 // and code that transform the generalized query structure into google query syntax
 
-// Readables for UI error handling purposes
-const comparatorReadable = {
-    lte: '≤',
-    lt: '<',
-    eq: '='
-
-}
-
-
-
 // The schema we want to search on
 let schemaObjects = [new GeneralSearch()] // new Text(), new Images(), new News(), new Shopping()
 schemaObjects = [schemaObjects[0]];
@@ -336,57 +326,63 @@ const restoreSearchFieldText = () => {
 }
 const navigateSearch = async (useAdvancedSearch: boolean) => {
 
-    await load;
-    await saveState();
-    if (sess.parsedQuery && useAdvancedSearch) // Only change value if we actually have parsed any query
+    
+    if(useAdvancedSearch)
     {
-        // insertText(lastParsedQuery.searchParams, true);
-        if (!sess.parsedQuery.searchParams)
-            alert('To perform an Advanced Search you need to provide at least one argument of text type, example: "contains apple"')
-        else
-            navigateToQuery(sess.parsedQuery);
+        await load;
+        await saveState();
+        if (sess.parsedQuery) // Only change value if we actually have parsed any query
+        {
+            // insertText(lastParsedQuery.searchParams, true);
+            if (!sess.parsedQuery.searchParams)
+                alert('To perform an Advanced Search you need to provide at least one argument of text type, example: "contains apple"')
+            else
+                navigateToQuery(sess.parsedQuery);
+            return;
+        }
+
     }
-    else {
-        // clean up url and tnavigate
-        // reset url
-        let newUrl = window.location.href;
-        if (lastSearchField) {
-            const urlObj = new URL(newUrl);
+    
+    // clean up url and tnavigate
+    // reset url
+    let newUrl = window.location.href;
+    if (lastSearchField) {
+        const urlObj = new URL(newUrl);
 
-            // set query text
-            urlObj.searchParams.set('q', lastSearchField.value);
+        // set query text
+        urlObj.searchParams.set('q', lastSearchField.value);
 
-            // There properties seems, or may cause problems
-            urlObj.searchParams.delete('as_q');
-            urlObj.searchParams.delete('oq');
-            urlObj.searchParams.delete('as_filetype');
-            if (urlObj.pathname != urlSearchPath) {
-                urlObj.pathname = urlSearchPath;
+        // There properties seems, or may cause problems
+        urlObj.searchParams.delete('as_q');
+        urlObj.searchParams.delete('oq');
+        urlObj.searchParams.delete('as_filetype');
+        if (urlObj.pathname != urlSearchPath) {
+            urlObj.pathname = urlSearchPath;
+        }
+        newUrl = urlObj.toString();
+
+    }
+
+    if (lastRestoredState) {
+        newUrl = decodeURI(newUrl);
+        const urlParams = searchQueryParamsByKey(lastRestoredState.parsedQuery);
+        const urlObj = new URL(newUrl);
+        urlParams.forEach((param, key) => {
+            const value = urlObj.searchParams.get(key);
+            if (value == param || value == encodeURIComponent(param)) {
+                urlObj.searchParams.delete(key);
+
             }
-            newUrl = urlObj.toString();
+        });
+        newUrl = urlObj.toString();
 
-        }
-
-        if (lastRestoredState) {
-            newUrl = decodeURI(newUrl);
-            const urlParams = searchQueryParamsByKey(lastRestoredState.parsedQuery);
-            const urlObj = new URL(newUrl);
-            urlParams.forEach((param, key) => {
-                const value = urlObj.searchParams.get(key);
-                if (value == param || value == encodeURIComponent(param)) {
-                    urlObj.searchParams.delete(key);
-
-                }
-            });
-            newUrl = urlObj.toString();
-
-            while (newUrl.endsWith('&'))
-                newUrl = newUrl.substring(0, newUrl.length - 1);
-
-        }
-        window.location.href = newUrl;
+        while (newUrl.endsWith('&'))
+            newUrl = newUrl.substring(0, newUrl.length - 1);
 
     }
+    window.location.href = newUrl;
+
+    
 
     return sess.parsedQuery;
 }
@@ -597,14 +593,17 @@ const parseReadableQuery = (response: QueryResponse) => {
     return ret.join('\n');
 }
 
-const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare | null => {
+const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare | undefined => {
     // check if starts with unknown, or end with unknown
     // the reason why we even have to do this and can't have implicit search by text, is that we got multiple text properties
     // and the query API can not assume one field from another (currently). In fact it cant assume text properties implicitly at all currently.
     // It only works for Date, Number and Enums currently. 
 
     if (!unknown)
-        return null;
+        return undefined;
+    let startUnknown:ConditionCompare | undefined = undefined;
+    let endUnkown:ConditionCompare | undefined = undefined;
+
     for (let i = 0; i < unknown.length; i++) {
         const u = unknown[i];
         if (u.offset == 0 && u.length > 2) {
@@ -614,7 +613,7 @@ const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare
             if (value.startsWith("\"") && value.endsWith("\"")) {
                 value = value.substring(1, value.length - 1);
             }
-            return {
+            startUnknown = {
                 compare:
                 {
                     key: allWordsKey,
@@ -623,12 +622,13 @@ const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare
             }
 
         }
+        // ends with unnknown?
         if (u.offset + u.length == input.length) {
             let value = input.substring(u.offset, u.offset + u.length);
             if (value.startsWith("\"") && value.endsWith("\"")) {
                 value = value.substring(1, value.length - 1);
             }
-            return {
+            endUnkown =  {
                 compare:
                 {
                     key: allWordsKey,
@@ -636,8 +636,21 @@ const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare
                 }
             }
         }
+        if(startUnknown && endUnkown)
+            break;
     }
-    return null;
+    let unknownToUse = startUnknown;
+    if(endUnkown?.compare?.eq)
+    {
+        if(!unknownToUse || !unknownToUse.compare.eq)
+            unknownToUse = endUnkown;
+        else //combine
+        {
+            // use end unknown if longer
+            unknownToUse.compare.eq = String(unknownToUse?.compare.eq) + ' ' + String(endUnkown?.compare.eq)
+        }
+    }
+    return unknownToUse;
 }
 const parseReadableOrdinaryQuery = (condition: (ConditionAnd | ConditionCompare)) => {
     if ((condition as ConditionAnd).and) {
