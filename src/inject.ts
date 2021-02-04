@@ -50,7 +50,7 @@ var insertedLastUnparsedQuery = false;
 var hasTypedAnything = false;
 var load: Promise<any>;
 
-// UI
+// UI (nasty since we are manipulating DOM and are not injecting html with iframes)
 var advancedSearchElementWrapper = document.createElement('div');
 advancedSearchElementWrapper.style.position = 'relative';
 advancedSearchElementWrapper.style.zIndex = '1000';
@@ -618,7 +618,7 @@ const parseUnknownQuery = (input: string, unknown?: Unknown[]): ConditionCompare
     // the reason why we even have to do this and can't have implicit search by text, is that we got multiple text properties
     // and the query API can not assume one field from another (currently). In fact it cant assume text properties implicitly at all currently.
     // It only works for Date, Number and Enums currently. 
-    
+
     if (!unknown)
         return null;
     for (let i = 0; i < unknown.length; i++) {
