@@ -258,16 +258,7 @@ const setScrollStyle = () => {
 
 
 // The search experience, code that define the translation to natural language to the generalized query structure
-// and code that transform the generalized query structure into twitter query syntax
-
-// Some rules about twitter advanced filter
-const maxFieldUsages = {
-
-}
-// Some fields should not have <= < comparators allowed
-const fieldInvalidComparators = {
-    //  [numbersRangeKey] : ['eq']
-}
+// and code that transform the generalized query structure into google query syntax
 
 // Readables for UI error handling purposes
 const comparatorReadable = {
@@ -277,14 +268,7 @@ const comparatorReadable = {
 
 }
 
-// Prevent bad code, with the lack of unit tests
-Object.keys(fieldInvalidComparators).forEach((key) => {
-    fieldInvalidComparators[key].forEach((value) => {
-        if (!comparatorReadable[value])
-            throw new Error(`No readable representation for ${key} found`)
-    });
 
-})
 
 // The schema we want to search on
 let schemaObjects = [new GeneralSearch()] // new Text(), new Images(), new News(), new Shopping()
@@ -869,7 +853,7 @@ const parseDateConditions = (condition: (ConditionAnd | ConditionCompare)): Pars
 
 
 
-const parseOrdinaryConditions = (condition: (ConditionElement), fieldCounter = {}): ParsedQuery => {
+const parseOrdinaryConditions = (condition: (ConditionElement)): ParsedQuery => {
     if (!condition)
         return {};
     if ((condition as ConditionAnd).and) {
@@ -878,7 +862,7 @@ const parseOrdinaryConditions = (condition: (ConditionElement), fieldCounter = {
         const searchParamsPre: string[] = [];
 
         (condition as ConditionAnd).and.forEach((element) => {
-            const parseResult = parseOrdinaryConditions(element, fieldCounter);
+            const parseResult = parseOrdinaryConditions(element);
             if (parseResult.searchParams)
                 searchParams.push(parseResult.searchParams);
             if (parseResult.queryParams)
@@ -894,21 +878,6 @@ const parseOrdinaryConditions = (condition: (ConditionElement), fieldCounter = {
     }
     if ((condition as ConditionCompare).compare) {
         const comp = (condition as ConditionCompare).compare;
-        const oneDescription = firstDescription(fieldsByKey[comp.key].description)
-        fieldCounter[comp.key] = (fieldCounter[comp.key] ? fieldCounter[comp.key] : 0) + 1;
-        if (maxFieldUsages[comp.key] != undefined && fieldCounter[comp.key] > maxFieldUsages[comp.key]) {
-            alert(`You can only filter on ${oneDescription} ${maxFieldUsages[comp.key]} time(s)`)
-        }
-
-        if (fieldInvalidComparators[comp.key]) {
-            const invalidComparators = [...fieldInvalidComparators[comp.key]].filter(comparator => comp[comparator] != undefined);
-            if (invalidComparators.length > 0) {
-                alert(`You can not filter on ${oneDescription} with a ${comparatorReadable[invalidComparators[0]]} comparator`)
-
-            }
-
-        }
-
         switch (comp.key) {
             case allWordsKey:
                 {
