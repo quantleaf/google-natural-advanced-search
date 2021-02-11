@@ -37,7 +37,6 @@ var expanded: boolean = false; // pre initalization, then its either true or fal
 var expandedOpenedManually: boolean = false;
 var sess: QuerySession = {}
 var ctrlDown: boolean = false;
-var lastRequestTime: number = new Date().getTime();
 var lastSuggestions: string | undefined;
 var showSuggestions: boolean = false;
 var lastSearchField: HTMLInputElement | null | undefined = null;
@@ -1126,8 +1125,6 @@ const  initialize = async () => {
             sess.parsedQuery = undefined;
             load = new Promise((resolve) => {
                 debounce(() => {
-                    if ((lastRequestTime + debounceTime) < new Date().getTime()) {
-
                         getResult(lastSearchField?.value).then(() => {
                             // Hide or show
                             if (sess.lastReadableQuery && !expanded) {
@@ -1144,11 +1141,9 @@ const  initialize = async () => {
                         });
 
 
-                    }
-                }, debounceTime + 1)();
+                }, debounceTime)();
             });
 
-            lastRequestTime = new Date().getTime();
         });
         lastSearchField.addEventListener("click", () => {
 
@@ -1239,11 +1234,4 @@ const  initialize = async () => {
     }
 }
 
-
-initialize(); // Starting point 1
-chrome.runtime.onMessage.addListener(
-     (request) => {
-        if (request.message === '__new_url_ql__') {
-            initialize();  // Starting point 2
-        }
-    });
+initialize();

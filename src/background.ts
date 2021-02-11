@@ -12,19 +12,13 @@ chrome.runtime.onInstalled.addListener(function() {
  
 
 });
-chrome.tabs.onUpdated.addListener(
-  function(tabId, changeInfo) {
-    if (changeInfo.url) {
-      chrome.tabs.sendMessage( tabId, {
-        message: '__new_url_ql__',
-        url: changeInfo.url
-      });
-    }
-  }
-);
 
 chrome.runtime.onMessage.addListener(function(message){
-  if (message == "__new_help_tab__"){
-     chrome.tabs.create({ url: '/help.html'});
-  }
+if (typeof message == 'string' && message == "__new_help_tab__"){
+    window.open('/help.html','_blank');
+
+ }
+ if (typeof message == 'string' && message == "__new_donation_tab__"){
+   window.open('https://www.buymeacoffee.com/quantleaf','_blank');
+ }
 });

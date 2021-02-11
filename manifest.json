@@ -1,9 +1,8 @@
 {
     "name": "Natural Advanced Search for Google™",
-    "version": "0.0.1",
+    "version": "0.0.4",
     "description": "Google advanced search in natural language",
     "permissions": [
-      "tabs",
       "storage"
     ],
     "background": {
